@@ -1,60 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guild Housing Map</title>
+    <title>Testemunhas de Geodude</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="grid-overlay.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #111;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1 {
+            margin: 10px 0;
+            font-size: 28px;
+            color: #ffd35c;
+            text-shadow: 0 0 10px #000;
+        }
+
+        .content {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            width: 100%;
+            height: 100%;
+            max-height: calc(100vh - 60px);
+        }
+
+        .map-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .map-background {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .side-panel {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 15px;
+            border-left: 2px solid #333;
+            overflow-y: auto;
+        }
+
+        .side-panel h3 {
+            color: #ffd35c;
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .occupied-item {
+            font-size: 14px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+
+        .occupied-item span {
+            color: #ffd35c;
+        }
+
+        .empty-message {
+            font-size: 13px;
+            color: #aaa;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div class="map-container">
-        <div class="map-background" id="mapBackground">
-            <!-- House plots will be dynamically positioned here -->
-        </div>
-    </div>
+    <h1>Testemunhas de Geodude - Bairro dos Ricos - Layer 1</h1>
 
-    <div class="legend">
-        <h3>Legend</h3>
-        <div class="legend-item">
-            <div class="legend-color available"></div>
-            <span>Available</span>
+    <div class="content">
+        <div class="map-container">
+            <div class="map-background" id="mapBackground">
+                <!-- Plots serão gerados aqui -->
+            </div>
         </div>
-        <div class="legend-item">
-            <div class="legend-color occupied"></div>
-            <span>Occupied</span>
-        </div>
-        <div style="margin-top: 10px; font-size: 10px; color: #ccc;">
-            Press <strong>G</strong> to toggle grid
+
+        <div class="side-panel">
+            <h3>Houses</h3>
+            <div id="occupiedEntries"></div>
         </div>
     </div>
 
     <script>
-        // Housing data from CSV
-        const housingData = {
-            0: "Neviriah",
-            6: "Elvor",
-            7: "GasLightatdawn",
-            8: "Koren",
-            12: "Sailer",
-            13: "Sensayy",
-            17: "Baelys",
-            21: "guest",
-            22: "Briar",
-            23: "Lionhart",
-            24: "Halfyy",
-            28: "Aex",
-            29: "Gwen",
-            31: "Diff",
-            32: "Kafka",
-            38: "Nobbel",
-            41: "Phate",
-            43: "Cirillie",
-            46: "Wacsnie",
-            50: "Sungli"
-        };
-
-        // House plot positions loaded from external JSON file
+        // Carrega dados salvos
+        let housingData = JSON.parse(localStorage.getItem('housingData')) || {};
         let plotPositions = [];
         let mapImageData = {};
 
@@ -67,124 +114,133 @@
                 console.log('Plot positions loaded successfully:', data);
             } catch (error) {
                 console.error('Error loading plot positions:', error);
-                // Fallback to empty array if JSON fails to load
                 plotPositions = [];
             }
         }
 
         function createHousePlots() {
             const mapBackground = document.getElementById('mapBackground');
-            
-            // Clear existing plots
             mapBackground.innerHTML = '';
-            
+
             plotPositions.forEach((position) => {
                 const plot = document.createElement('div');
                 plot.className = 'house-plot';
                 plot.textContent = position.plotNumber;
-                
-                // Check if plot is occupied
+
+                const tooltip = document.createElement('div');
+                tooltip.className = 'plot-info';
+
                 if (housingData[position.plotNumber]) {
                     plot.classList.add('occupied');
-                    
-                    // Add tooltip with buyer name
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'plot-info';
                     tooltip.textContent = `Plot ${position.plotNumber}: ${housingData[position.plotNumber]}`;
-                    plot.appendChild(tooltip);
                 } else {
-                    // Add tooltip for available plot
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'plot-info';
-                    tooltip.textContent = `Plot ${position.plotNumber}: Available`;
-                    plot.appendChild(tooltip);
+                    tooltip.textContent = `Plot ${position.plotNumber}: Disponível`;
                 }
-                
-                // Position the plot
+
+                plot.appendChild(tooltip);
                 plot.style.left = position.x + 'px';
                 plot.style.top = position.y + 'px';
-                
+                plot.addEventListener('click', () => handlePlotClick(position.plotNumber));
+
                 mapBackground.appendChild(plot);
+            });
+
+            updateOccupiedList();
+        }
+
+        function handlePlotClick(plotNumber) {
+            const currentName = housingData[plotNumber] || '';
+            const newName = prompt(`Digite o nome para o plot ${plotNumber}:`, currentName);
+
+            if (newName === null) return;
+
+            if (newName.trim() === '') {
+                delete housingData[plotNumber];
+            } else {
+                housingData[plotNumber] = newName.trim();
+            }
+
+            localStorage.setItem('housingData', JSON.stringify(housingData));
+            createHousePlots();
+            updatePlotPositions();
+        }
+
+        function updateOccupiedList() {
+            const container = document.getElementById('occupiedEntries');
+            container.innerHTML = '';
+
+            const occupied = Object.entries(housingData)
+                .sort((a, b) => a[0] - b[0]);
+
+            if (occupied.length === 0) {
+                container.innerHTML = '<div class="empty-message">Nenhum plot ocupado.</div>';
+                return;
+            }
+
+            occupied.forEach(([plotNumber, name]) => {
+                const item = document.createElement('div');
+                item.className = 'occupied-item';
+                item.innerHTML = `<strong>#${plotNumber}</strong>: <span>${name}</span>`;
+                container.appendChild(item);
             });
         }
 
         function updatePlotPositions() {
             const mapBackground = document.getElementById('mapBackground');
             const plots = document.querySelectorAll('.house-plot');
-            
             if (plots.length === 0) return;
-            
-            // Get the actual map image dimensions and position (same logic as grid)
+
             const mapImage = new Image();
             mapImage.onload = function() {
                 const mapRect = mapBackground.getBoundingClientRect();
                 const containerWidth = mapRect.width;
                 const containerHeight = mapRect.height;
-                
-                // Calculate the actual displayed image dimensions (maintaining aspect ratio)
+
                 const imageAspectRatio = mapImage.width / mapImage.height;
                 const containerAspectRatio = containerWidth / containerHeight;
-                
+
                 let imageWidth, imageHeight, offsetX, offsetY;
-                
+
                 if (imageAspectRatio > containerAspectRatio) {
-                    // Image is wider than container
                     imageWidth = containerWidth;
                     imageHeight = containerWidth / imageAspectRatio;
                     offsetX = 0;
                     offsetY = (containerHeight - imageHeight) / 2;
                 } else {
-                    // Image is taller than container
                     imageHeight = containerHeight;
                     imageWidth = containerHeight * imageAspectRatio;
                     offsetX = (containerWidth - imageWidth) / 2;
                     offsetY = 0;
                 }
-                
-                // Calculate scale factor from original image to displayed image
+
                 const scaleX = imageWidth / mapImage.width;
                 const scaleY = imageHeight / mapImage.height;
-                
-                // Update plot positions using the same logic as grid
+
                 plots.forEach((plot, index) => {
                     const originalPos = plotPositions[index];
                     if (originalPos) {
                         const scaledX = offsetX + (originalPos.x * scaleX);
                         const scaledY = offsetY + (originalPos.y * scaleY);
-                        
                         plot.style.left = scaledX + 'px';
                         plot.style.top = scaledY + 'px';
                     }
                 });
             };
-            
             mapImage.src = 'map.jpg';
         }
 
-        // Initialize the map
         document.addEventListener('DOMContentLoaded', async function() {
-            // Load plot positions from JSON file first
             await loadPlotPositions();
-            
-            // Create house plots after positions are loaded
             createHousePlots();
-            
-            // Update positions on window resize
-            let plotResizeTimeout;
+
             window.addEventListener('resize', function() {
-                // Clear existing timeout to prevent multiple rapid calls
-                clearTimeout(plotResizeTimeout);
-                // Update immediately for responsiveness
                 updatePlotPositions();
             });
-            
-            // Initial position update
+
             setTimeout(updatePlotPositions, 100);
-            
-            // Create initial grid overlay
-            //setTimeout(createGridOverlay, 500);
         });
     </script>
+
     <script src="grid-overlay.js"></script>
 </body>
 </html>
