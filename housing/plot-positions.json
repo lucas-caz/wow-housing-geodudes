@@ -14,7 +14,7 @@
     { "x": 2370, "y": 1450, "plotNumber": 6 },
     { "x": 1900, "y": 820, "plotNumber": 7 },
     { "x": 2045, "y": 1700, "plotNumber": 8 },
-    { "x": 1820, "y": 860, "plotNumber": 9 },
+    { "x": 1815, "y": 860, "plotNumber": 9 },
     { "x": 1850, "y": 1645, "plotNumber": 10 },
     { "x": 2000, "y": 1295, "plotNumber": 11 },
     { "x": 965, "y": 1000, "plotNumber": 12 },
@@ -58,7 +58,7 @@
     { "x": 1330, "y": 1040, "plotNumber": 50 },
     { "x": 1680, "y": 985, "plotNumber": 51 },
     { "x": 1370, "y": 950, "plotNumber": 52 },
-    { "x": 1510, "y": 1250, "plotNumber": 53 },
+    { "x": 1505, "y": 1250, "plotNumber": 53 },
     { "x": 1880, "y": 1115, "plotNumber": 54 }
   ]
 }
