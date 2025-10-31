@@ -6,82 +6,120 @@
     <title>Testemunhas de Geodude</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="grid-overlay.css">
-    <style> 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #111;
-            color: #fff;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
+    <style>
+	  @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap');
 
-        h1 {
-            margin: 10px 0;
-            font-size: 28px;
-            color: #ffd35c;
-            text-shadow: 0 0 10px #000;
-        }
+	  body {
+		font-family: Arial, sans-serif;
+		background-color: #1b1b1b;
+		color: #f5f5f5;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		height: 100vh;
+		overflow: hidden;
+	  }
 
-        .content {
-            display: flex;
-            justify-content: center;
-            align-items: stretch;
-            width: 100%;
-            height: 100%;
-            max-height: calc(100vh - 60px);
-        }
+	  h1 {
+		font-family: 'Cinzel Decorative', serif;
+		font-size: 36px;
+		color: #ffd35c;
+		text-shadow: 0 0 10px #000, 0 0 20px #664b00;
+		margin: 15px 0;
+		letter-spacing: 2px;
+	  }
 
-        .map-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
-        }
+	  .content {
+		display: flex;
+		justify-content: center;
+		align-items: stretch;
+		width: 100%;
+		height: 100%;
+		max-height: calc(100vh - 80px);
+	  }
 
-        .map-background {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
+	  .map-container {
+		flex: 1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		overflow: hidden;
+		position: relative;
+		background-color: #1b1b1b;
+	  }
 
-        .side-panel {
-            width: 250px;
-            background: rgba(0, 0, 0, 0.75);
-            padding: 15px;
-            border-left: 2px solid #333;
-            overflow-y: auto;
-        }
+	  .map-background {
+		position: relative;
+		width: 100%;
+		height: 100%;
+	  }
 
-        .side-panel h3 {
-            color: #ffd35c;
-            margin-top: 0;
-            text-align: center;
-        }
+	  /* --- Painel lateral estilizado --- */
+	  .side-panel {
+		width: 280px;
+		background: rgba(30, 30, 30, 0.95);
+		padding: 20px;
+		border-left: 3px solid #ffd35c;
+		box-shadow: -4px 0 10px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 211, 92, 0.2);
+		border-radius: 12px 0 0 12px;
+		overflow-y: auto;
+	  }
 
-        .occupied-item {
-            font-size: 14px;
-            margin-bottom: 6px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 4px;
-        }
+	  .side-panel h3 {
+		color: #ffd35c;
+		text-align: center;
+		font-size: 20px;
+		margin-top: 0;
+		margin-bottom: 15px;
+		font-weight: 600;
+		border-bottom: 1px solid rgba(255, 211, 92, 0.4);
+		padding-bottom: 8px;
+	  }
 
-        .occupied-item span {
-            color: #ffd35c;
-        }
+	  .occupied-item {
+		font-size: 15px;
+		margin-bottom: 8px;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 211, 92, 0.2);
+		border-radius: 6px;
+		padding: 6px 10px;
+		transition: background 0.2s;
+	  }
 
-        .empty-message {
-            font-size: 13px;
-            color: #aaa;
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
+	  .occupied-item:hover {
+		background: rgba(255, 211, 92, 0.1);
+	  }
+
+	  .occupied-item strong {
+		color: #ffd35c;
+	  }
+
+	  .occupied-item span {
+		color: #fff;
+	  }
+
+	  .empty-message {
+		font-size: 14px;
+		color: #aaa;
+		text-align: center;
+		margin-top: 20px;
+	  }
+
+	  /* Scrollbar personalizada */
+	  .side-panel::-webkit-scrollbar {
+		width: 8px;
+	  }
+
+	  .side-panel::-webkit-scrollbar-thumb {
+		background: #555;
+		border-radius: 4px;
+	  }
+
+	  .side-panel::-webkit-scrollbar-thumb:hover {
+		background: #777;
+	  }
+	</style>
 </head>
 <body>
     <h1>Testemunhas de Geodude - Layer 1</h1>
