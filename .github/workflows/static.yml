@@ -1,21 +1,44 @@
 name: Deploy housing folder to GitHub Pages
+
 on:
   push:
     branches:
       - main
+
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Copy files
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Update docs folder from housing
         run: |
-          mkdir docs
-          cp -r housing/* docs/
-      - name: Commit and push
+          # Cria docs/ se não existir
+          mkdir -p docs
+          # Remove conteúdo antigo dentro de docs/
+          rm -rf docs/*
+          # Copia tudo de housing/ para docs/
+          cp -r housing/* docs/ || true
+          # Garante que o GitHub Pages não use Jekyll
+          touch docs/.nojekyll
+          echo "Arquivos atualizados dentro de /docs"
+
+      - name: Commit and push changes if needed
         run: |
           git config user.name "lucas-caz"
           git config user.email "lucas.caz@gmail.com"
           git add docs
-          git commit -m "Deploy"
-          git push
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração para publicar."
+          else
+            git commit -m "Deploy atualizado automaticamente"
+            git push origin HEAD:main
+            echo "Atualização enviada para o branch main."
+          fi
