@@ -99,48 +99,77 @@
         </div>
     </div>
 
-    <script>
-        // Carrega dados salvos
-        let housingData = JSON.parse(localStorage.getItem('housingData')) || {};
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCanbOEglqIz3VPHjp17yxnhQb_J437rug",
+            authDomain: "wow-housing-geodudes.firebaseapp.com",
+            projectId: "wow-housing-geodudes",
+            storageBucket: "wow-housing-geodudes.firebasestorage.app",
+            messagingSenderId: "748529193989",
+            appId: "1:748529193989:web:142093f16125fe140bb86c",
+            databaseURL: "https://wow-housing-geodudes-default-rtdb.firebaseio.com/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Funções de integração com Firebase
+        async function saveHousingData(data) {
+            await set(ref(db, "housingData"), data);
+        }
+
+        function listenHousingData(callback) {
+            const housingRef = ref(db, "housingData");
+            onValue(housingRef, (snapshot) => {
+                const value = snapshot.val() || {};
+                callback(value);
+            });
+        }
+
+        // Código principal do site
+        let housingData = {};
         let plotPositions = [];
         let mapImageData = {};
 
         async function loadPlotPositions() {
             try {
-                const response = await fetch('plot-positions.json');
+                const response = await fetch("plot-positions.json");
                 const data = await response.json();
                 plotPositions = data.plotPositions;
                 mapImageData = data.referenceImage;
-                console.log('Plot positions loaded successfully:', data);
             } catch (error) {
-                console.error('Error loading plot positions:', error);
+                console.error("Erro ao carregar plot-positions.json:", error);
                 plotPositions = [];
             }
         }
 
         function createHousePlots() {
-            const mapBackground = document.getElementById('mapBackground');
-            mapBackground.innerHTML = '';
+            const mapBackground = document.getElementById("mapBackground");
+            mapBackground.innerHTML = "";
 
             plotPositions.forEach((position) => {
-                const plot = document.createElement('div');
-                plot.className = 'house-plot';
+                const plot = document.createElement("div");
+                plot.className = "house-plot";
                 plot.textContent = position.plotNumber;
 
-                const tooltip = document.createElement('div');
-                tooltip.className = 'plot-info';
+                const tooltip = document.createElement("div");
+                tooltip.className = "plot-info";
 
                 if (housingData[position.plotNumber]) {
-                    plot.classList.add('occupied');
+                    plot.classList.add("occupied");
                     tooltip.textContent = `Plot ${position.plotNumber}: ${housingData[position.plotNumber]}`;
                 } else {
                     tooltip.textContent = `Plot ${position.plotNumber}: Disponível`;
                 }
 
                 plot.appendChild(tooltip);
-                plot.style.left = position.x + 'px';
-                plot.style.top = position.y + 'px';
-                plot.addEventListener('click', () => handlePlotClick(position.plotNumber));
+                plot.style.left = position.x + "px";
+                plot.style.top = position.y + "px";
+                plot.addEventListener("click", () => handlePlotClick(position.plotNumber));
 
                 mapBackground.appendChild(plot);
             });
@@ -148,29 +177,26 @@
             updateOccupiedList();
         }
 
-        function handlePlotClick(plotNumber) {
-            const currentName = housingData[plotNumber] || '';
+        async function handlePlotClick(plotNumber) {
+            const currentName = housingData[plotNumber] || "";
             const newName = prompt(`Digite o nome para o plot ${plotNumber}:`, currentName);
 
             if (newName === null) return;
 
-            if (newName.trim() === '') {
+            if (newName.trim() === "") {
                 delete housingData[plotNumber];
             } else {
                 housingData[plotNumber] = newName.trim();
             }
 
-            localStorage.setItem('housingData', JSON.stringify(housingData));
-            createHousePlots();
-            updatePlotPositions();
+            await saveHousingData(housingData);
         }
 
         function updateOccupiedList() {
-            const container = document.getElementById('occupiedEntries');
-            container.innerHTML = '';
+            const container = document.getElementById("occupiedEntries");
+            container.innerHTML = "";
 
-            const occupied = Object.entries(housingData)
-                .sort((a, b) => a[0] - b[0]);
+            const occupied = Object.entries(housingData).sort((a, b) => a[0] - b[0]);
 
             if (occupied.length === 0) {
                 container.innerHTML = '<div class="empty-message">Nenhum plot ocupado.</div>';
@@ -178,20 +204,20 @@
             }
 
             occupied.forEach(([plotNumber, name]) => {
-                const item = document.createElement('div');
-                item.className = 'occupied-item';
+                const item = document.createElement("div");
+                item.className = "occupied-item";
                 item.innerHTML = `<strong>#${plotNumber}</strong>: <span>${name}</span>`;
                 container.appendChild(item);
             });
         }
 
         function updatePlotPositions() {
-            const mapBackground = document.getElementById('mapBackground');
-            const plots = document.querySelectorAll('.house-plot');
+            const mapBackground = document.getElementById("mapBackground");
+            const plots = document.querySelectorAll(".house-plot");
             if (plots.length === 0) return;
 
             const mapImage = new Image();
-            mapImage.onload = function() {
+            mapImage.onload = function () {
                 const mapRect = mapBackground.getBoundingClientRect();
                 const containerWidth = mapRect.width;
                 const containerHeight = mapRect.height;
@@ -219,24 +245,27 @@
                 plots.forEach((plot, index) => {
                     const originalPos = plotPositions[index];
                     if (originalPos) {
-                        const scaledX = offsetX + (originalPos.x * scaleX);
-                        const scaledY = offsetY + (originalPos.y * scaleY);
-                        plot.style.left = scaledX + 'px';
-                        plot.style.top = scaledY + 'px';
+                        const scaledX = offsetX + originalPos.x * scaleX;
+                        const scaledY = offsetY + originalPos.y * scaleY;
+                        plot.style.left = scaledX + "px";
+                        plot.style.top = scaledY + "px";
                     }
                 });
             };
-            mapImage.src = 'map.jpg';
+            mapImage.src = "map.jpg";
         }
 
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener("DOMContentLoaded", async function () {
             await loadPlotPositions();
-            createHousePlots();
 
-            window.addEventListener('resize', function() {
+            // Atualiza quando Firebase muda
+            listenHousingData((data) => {
+                housingData = data;
+                createHousePlots();
                 updatePlotPositions();
             });
 
+            window.addEventListener("resize", updatePlotPositions);
             setTimeout(updatePlotPositions, 100);
         });
     </script>
